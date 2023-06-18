@@ -140,7 +140,7 @@ export function Soundboard({ onPlay, onStop }: SoundboardProps) {
             {soundboard.title}
           </Typography>
           <Stack direction="row">
-            <Tooltip title="Sort Sounds Ascending">
+            <Tooltip title="Sort Ascending">
               <IconButton onClick={() => sortAscending()}>
                 <Sort />
               </IconButton>
