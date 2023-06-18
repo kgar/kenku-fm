@@ -50,6 +50,18 @@ export const soundboardsSlice = createSlice({
         (id) => id !== action.payload
       );
     },
+    sortSoundboard: (state, action: PayloadAction<string>) => {
+      const soundboard = state.soundboards.byId[action.payload];
+
+      const sounds = [...soundboard.sounds.map((s) => state.sounds[s])]
+        .sort((left, right) => left.title.localeCompare(right.title))
+        .map((x) => x.id);
+
+      state.soundboards.byId[action.payload] = {
+        ...state.soundboards.byId[action.payload],
+        sounds,
+      };
+    },
     editSoundboard: (state, action: PayloadAction<Partial<Soundboard>>) => {
       if (!action.payload.id) {
         throw Error("Id needed in editSoundboard payload");
@@ -127,6 +139,7 @@ export const soundboardsSlice = createSlice({
 export const {
   addSoundboard,
   removeSoundboard,
+  sortSoundboard,
   editSoundboard,
   moveSoundboard,
   addSound,

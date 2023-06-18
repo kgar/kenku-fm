@@ -4,6 +4,7 @@ import Typography from "@mui/material/Typography";
 import Stack from "@mui/material/Stack";
 import IconButton from "@mui/material/IconButton";
 import Add from "@mui/icons-material/AddCircleRounded";
+import Sort from "@mui/icons-material/SortByAlphaRounded";
 import Tooltip from "@mui/material/Tooltip";
 import Box from "@mui/material/Box";
 import Back from "@mui/icons-material/ChevronLeftRounded";
@@ -14,7 +15,7 @@ import Backdrop from "@mui/material/Backdrop";
 
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../app/store";
-import { removeSoundboard, Sound, addSounds } from "./soundboardsSlice";
+import { removeSoundboard, Sound, addSounds, sortSoundboard } from "./soundboardsSlice";
 import { SoundAdd } from "./SoundAdd";
 import { SoundboardSettings } from "./SoundboardSettings";
 import { SoundboardSounds } from "./SoundboardSounds";
@@ -66,6 +67,10 @@ export function Soundboard({ onPlay, onStop }: SoundboardProps) {
     dispatch(removeSoundboard(soundboard.id));
     navigate(-1);
     handleMenuClose();
+  }
+
+  function sortAscending() {
+    dispatch(sortSoundboard(soundboard.id));
   }
 
   const { dragging, containerListeners, overlayListeners } = useDrop(
@@ -135,6 +140,11 @@ export function Soundboard({ onPlay, onStop }: SoundboardProps) {
             {soundboard.title}
           </Typography>
           <Stack direction="row">
+            <Tooltip title="Sort Sounds Ascending">
+              <IconButton onClick={() => sortAscending()}>
+                <Sort />
+              </IconButton>
+            </Tooltip>
             <Tooltip title="Add Sound">
               <IconButton onClick={() => setAddOpen(true)}>
                 <Add />
