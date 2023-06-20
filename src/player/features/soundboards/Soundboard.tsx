@@ -15,7 +15,12 @@ import Backdrop from "@mui/material/Backdrop";
 
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../app/store";
-import { removeSoundboard, Sound, addSounds, sortSoundboard } from "./soundboardsSlice";
+import {
+  removeSoundboard,
+  Sound,
+  addSounds,
+  sortSoundboard,
+} from "./soundboardsSlice";
 import { SoundAdd } from "./SoundAdd";
 import { SoundboardSettings } from "./SoundboardSettings";
 import { SoundboardSounds } from "./SoundboardSounds";
@@ -23,6 +28,7 @@ import { SoundboardSounds } from "./SoundboardSounds";
 import { isBackground, backgrounds } from "../../backgrounds";
 import { useDrop } from "../../common/useDrop";
 import { useNavigate, useParams } from "react-router-dom";
+import { Input } from "@mui/material";
 
 type SoundboardProps = {
   onPlay: (sound: Sound) => void;
@@ -36,9 +42,12 @@ export function Soundboard({ onPlay, onStop }: SoundboardProps) {
   const soundboard = useSelector(
     (state: RootState) => state.soundboards.soundboards.byId[soundboardId]
   );
+  const sounds = useSelector((state: RootState) => state.soundboards.sounds);
 
   const [addOpen, setAddOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [filter, setFilter] = useState("");
+  const [filteredSoundboard, setFilteredSoundboard] = useState(soundboard);
 
   const image = isBackground(soundboard.background)
     ? backgrounds[soundboard.background]
@@ -73,10 +82,39 @@ export function Soundboard({ onPlay, onStop }: SoundboardProps) {
     dispatch(sortSoundboard(soundboard.id));
   }
 
+  function applyFilterToSoundboard() {
+    setFilteredSoundboard({
+      ...soundboard,
+      sounds: soundboard.sounds.filter(
+        (s: string) =>
+          filter.trim() === "" ||
+          sounds[s]?.title
+            .toLocaleLowerCase()
+            .includes(filter.trim().toLocaleLowerCase())
+      ),
+    });
+  }
+
+  React.useEffect(() => {
+    const timeout = setTimeout(() => {
+      applyFilterToSoundboard();
+    }, 350);
+
+    return () => clearTimeout(timeout);
+  }, [filter]);
+
+  React.useEffect(() => {
+    applyFilterToSoundboard();
+  }, [soundboard]);
+
+  function filterValueChanged(value: string) {
+    setFilter(value);
+  }
+
   const { dragging, containerListeners, overlayListeners } = useDrop(
     (directories) => {
       const sounds: Sound[] = [];
-      for (let directory of Object.values(directories)) {
+      for (const directory of Object.values(directories)) {
         sounds.push(
           ...directory.audioFiles.map((file) => ({
             ...file,
@@ -154,9 +192,29 @@ export function Soundboard({ onPlay, onStop }: SoundboardProps) {
               <MoreVert />
             </IconButton>
           </Stack>
+          <Stack
+            p={4}
+            direction="row"
+            justifyContent="space-between"
+            alignItems="center"
+            sx={{ zIndex: 1 }}
+          >
+            <Input
+              margin="dense"
+              fullWidth
+              id="filter-sounds"
+              value={`${filter}`}
+              onChange={(e) => filterValueChanged(e.target.value)}
+              onKeyUp={() => filterValueChanged(filter)}
+              inputProps={{
+                "aria-label": "filter",
+              }}
+              placeholder="Filter"
+            />
+          </Stack>
         </Stack>
         <SoundboardSounds
-          soundboard={soundboard}
+          soundboard={filteredSoundboard}
           onPlay={onPlay}
           onStop={onStop}
         />
